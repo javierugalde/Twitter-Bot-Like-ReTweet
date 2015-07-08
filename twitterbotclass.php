@@ -1,4 +1,5 @@
 <?php
+#Here is my try at a PHP class. Haven't done much with oop so might be bad code sorry :P
 
 class twitterbot {
 
