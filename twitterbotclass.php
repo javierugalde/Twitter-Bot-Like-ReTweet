@@ -28,11 +28,17 @@ class twitterbot {
         global $ignorelist;
 
         $this->connection = new TwitterOAuth($consumerkey, $consumersecret, $secretkey, $secretsecret);
+
         $botid = $this->connection->get('account/verify_credentials')->id_str;
-        
+        //print_r($this->connection->get('account/verify_credentials'));
+        if(class_exists("MongoClient")){
         $m = new MongoClient();
         $db = $m->bots;
+        if(empty($botid)){
+            $botid = "tempbugfixbotneedtofix";
+        }
         $ignorelist = $db->$botid;
+        }
         
        return $this->connection;
         
@@ -121,6 +127,7 @@ class twitterbot {
     function hasbeenignored($userid){
         global $ignorelist;
         
+        if(class_exists("MongoClient")){
         $ignoreedsearch = $ignorelist->find(array("user" => $userid));
         $ignoreedsearch = iterator_to_array($ignoreedsearch);
         
@@ -129,6 +136,10 @@ class twitterbot {
         }
         else{
             return true;
+        }
+        }
+        else{
+            return false;
         }
     }
 
@@ -140,7 +151,9 @@ class twitterbot {
         foreach($mentions as $mention){
             if($this->instring($words, strtolower($mention->text)) && !$this->hasbeenignored($mention->user->id_str)){
                 $reply = $this->reply("@".$mention->user->screen_name.", ".$thereply, $mention->id_str, $mention->user->id_str);
+                if(class_exists("MongoClient")){
                 $ignorelist->insert(array("user" => $mention->user->id_str));
+                }
             }
             
         }
